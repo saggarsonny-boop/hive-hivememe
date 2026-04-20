@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { anthropic } from '@/lib/ai/client'
+import { getAnthropicClient } from '@/lib/ai/client'
 import { buildMemePrompt } from '@/lib/ai/prompt'
 import { MemeTone, MemeResult } from '@/lib/memes/templates'
 
@@ -7,6 +7,13 @@ export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
+    let anthropic
+    try {
+      anthropic = getAnthropicClient()
+    } catch {
+      return NextResponse.json({ error: 'AI service not configured' }, { status: 503 })
+    }
+
     const { situation, tone } = await req.json() as { situation: string; tone: MemeTone }
 
     if (!situation?.trim()) {
